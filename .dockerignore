@@ -1,0 +1,13 @@
+.git
+.env*
+!.env.example
+node_modules
+.next
+.eve
+.output
+.vercel
+.workflow-data
+logs
+dist
+*.tsbuildinfo
+.DS_Store
