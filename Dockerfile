@@ -18,7 +18,10 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
     pnpm install --frozen-lockfile --strict-peer-dependencies
 
-COPY agent ./agent
+# Keep this instruction explicit so source changes invalidate the Eve build.
+COPY ./agent/ ./agent/
+RUN sha256sum ./agent/agent.ts \
+    && grep -n "defineDynamic\|EVE_MODEL" ./agent/agent.ts
 COPY app ./app
 COPY components ./components
 COPY evals ./evals
