@@ -1,6 +1,11 @@
 import { defineAgent } from "eve";
 
-const model = process.env.EVE_MODEL || "openai/gpt-5.6-luna";
+const configuredModel = process.env.EVE_MODEL?.trim();
+const model = configuredModel || "openai/gpt-5.6-luna";
+
+console.info(
+  `[foreman] model=${model} source=${configuredModel ? "EVE_MODEL" : "default (EVE_MODEL is unset)"}`,
+);
 
 export default defineAgent({
   model,
