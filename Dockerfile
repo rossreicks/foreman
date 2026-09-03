@@ -48,6 +48,7 @@ RUN apt-get update \
 
 COPY --from=build --chown=node:node /app/package.json /app/pnpm-lock.yaml /app/pnpm-workspace.yaml ./
 COPY --from=build --chown=node:node /app/node_modules ./node_modules
+COPY --from=build --chown=node:node /app/agent ./agent
 COPY --from=build --chown=node:node /app/.eve ./.eve
 COPY --from=build --chown=node:node /app/.output ./.output
 COPY --from=build --chown=node:node /app/.next ./.next

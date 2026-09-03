@@ -20,6 +20,106 @@ services:
       timeout: 5s
       retries: 10
 
+  migrate:
+    build:
+      context: .
+    image: steve-app:local
+    restart: "no"
+    environment:
+      WORKFLOW_POSTGRES_URL: "postgres://${POSTGRES_USER:-world}:${POSTGRES_PASSWORD:-world}@postgres:5432/${POSTGRES_DB:-world}"
+      WORKFLOW_TARGET_WORLD: "${WORKFLOW_TARGET_WORLD:-@workflow/world-postgres}"
+    command: ["./node_modules/.bin/bootstrap"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  eve:
+    build:
+      context: .
+    image: steve-app:local
+    container_name: steve-eve
+    restart: unless-stopped
+    # Eve's Docker sandbox backend creates sibling containers through the host
+    # daemon. Mounting this socket grants the service root-equivalent host access.
+    user: root
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+      OPENAI_API_KEY: "${OPENAI_API_KEY:-}"
+      ANTHROPIC_API_KEY: "${ANTHROPIC_API_KEY:-}"
+      ROUTE_AUTH_BASIC_USER: "${ROUTE_AUTH_BASIC_USER:-}"
+      ROUTE_AUTH_BASIC_PASSWORD: "${ROUTE_AUTH_BASIC_PASSWORD:-}"
+      WORKFLOW_POSTGRES_URL: "postgres://${POSTGRES_USER:-world}:${POSTGRES_PASSWORD:-world}@postgres:5432/${POSTGRES_DB:-world}"
+      WORKFLOW_TARGET_WORLD: "${WORKFLOW_TARGET_WORLD:-@workflow/world-postgres}"
+      WORKFLOW_POSTGRES_WORKER_CONCURRENCY: "${WORKFLOW_POSTGRES_WORKER_CONCURRENCY:-10}"
+      WORKFLOW_POSTGRES_MAX_POOL_SIZE: "${WORKFLOW_POSTGRES_MAX_POOL_SIZE:-12}"
+      HOST_ONLY_SECRET: "${HOST_ONLY_SECRET:-}"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "${OTEL_EXPORTER_OTLP_ENDPOINT:-}"
+      OTEL_EXPORTER_OTLP_HEADERS: "${OTEL_EXPORTER_OTLP_HEADERS:-}"
+      OTEL_RECORD_INPUTS: "${OTEL_RECORD_INPUTS:-false}"
+      OTEL_RECORD_OUTPUTS: "${OTEL_RECORD_OUTPUTS:-false}"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:3000/eve/v1/health').then(r => { if (!r.ok) process.exit(1) }).catch(() => process.exit(1))"
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+
+  web:
+    build:
+      context: .
+    image: steve-app:local
+    container_name: steve-web
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      EVE_SELF_HOSTED: "1"
+      PORT: "3001"
+    command:
+      - node
+      - node_modules/next/dist/bin/next
+      - start
+      - --hostname
+      - 0.0.0.0
+      - --port
+      - "3001"
+    depends_on:
+      eve:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:3001/').then(r => { if (!r.ok) process.exit(1) }).catch(() => process.exit(1))"
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+
+  proxy:
+    image: caddy:2.10-alpine
+    container_name: steve-proxy
+    restart: unless-stopped
+    ports:
+      - "${APP_HOST_PORT:-3000}:3000"
+    volumes:
+      - ./deploy/docker/Caddyfile:/etc/caddy/Caddyfile:ro
+    depends_on:
+      eve:
+        condition: service_healthy
+      web:
+        condition: service_healthy
+
   # Optional local OpenTelemetry trace backend.
   # Start with `docker compose --profile observability up -d`.
   jaeger:

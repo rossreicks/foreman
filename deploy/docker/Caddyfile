@@ -1,0 +1,13 @@
+:3000 {
+	handle /eve/* {
+		reverse_proxy eve:3000
+	}
+
+	handle /.well-known/workflow/* {
+		reverse_proxy eve:3000
+	}
+
+	handle {
+		reverse_proxy web:3001
+	}
+}
