@@ -56,7 +56,7 @@ cp .env.example .env
 
 Set these before deploying:
 
-- one funded model key: `OPENAI_API_KEY` or `ANTHROPIC_API_KEY`;
+- a funded `AI_GATEWAY_API_KEY` and, optionally, the `EVE_MODEL` model ID;
 - strong `ROUTE_AUTH_BASIC_USER` and `ROUTE_AUTH_BASIC_PASSWORD` values;
 - a strong `POSTGRES_PASSWORD` and matching encoded password in `WORKFLOW_POSTGRES_URL`;
 - `OTEL_EXPORTER_OTLP_ENDPOINT=http://127.0.0.1:4318` if Jaeger is enabled.

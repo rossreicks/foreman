@@ -164,9 +164,7 @@
           }
           return value;
         };
-        if (!env.OPENAI_API_KEY && !env.ANTHROPIC_API_KEY) {
-          errors.push("OPENAI_API_KEY or ANTHROPIC_API_KEY must be set");
-        }
+        required("AI_GATEWAY_API_KEY");
         required("ROUTE_AUTH_BASIC_USER");
         const password = required("ROUTE_AUTH_BASIC_PASSWORD", 16);
         const workflowUrl = required("WORKFLOW_POSTGRES_URL");

@@ -56,7 +56,7 @@ the Workflow 5 beta protocol, while that package's `latest` tag is Workflow 4.
 - Node.js 24
 - Corepack with pnpm 10.33.2
 - Docker Engine or Docker Desktop
-- An OpenAI or Anthropic API key with quota
+- A Vercel AI Gateway API key with quota
 
 ## Local setup
 
@@ -68,7 +68,7 @@ cp .env.example .env
 
 Edit `.env` before continuing:
 
-1. Set `OPENAI_API_KEY` or `ANTHROPIC_API_KEY`.
+1. Set `AI_GATEWAY_API_KEY` and, optionally, change `EVE_MODEL`.
 2. Replace both example passwords.
 3. Keep `POSTGRES_PASSWORD` and the password inside `WORKFLOW_POSTGRES_URL` identical.
 

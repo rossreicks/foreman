@@ -45,8 +45,8 @@ services:
     environment:
       NODE_ENV: production
       PORT: "3000"
-      OPENAI_API_KEY: "${OPENAI_API_KEY:-}"
-      ANTHROPIC_API_KEY: "${ANTHROPIC_API_KEY:-}"
+      EVE_MODEL: "${EVE_MODEL:-openai/gpt-5.6-luna}"
+      AI_GATEWAY_API_KEY: "${AI_GATEWAY_API_KEY:-}"
       ROUTE_AUTH_BASIC_USER: "${ROUTE_AUTH_BASIC_USER:-}"
       ROUTE_AUTH_BASIC_PASSWORD: "${ROUTE_AUTH_BASIC_PASSWORD:-}"
       WORKFLOW_POSTGRES_URL: "postgres://${POSTGRES_USER:-world}:${POSTGRES_PASSWORD:-world}@postgres:5432/${POSTGRES_DB:-world}"
