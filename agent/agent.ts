@@ -1,14 +1,23 @@
-import { defineAgent } from "eve";
+import { defineAgent, defineDynamic } from "eve";
 
-const configuredModel = process.env.EVE_MODEL?.trim();
-const model = configuredModel || "openai/gpt-5.6-luna";
-
-console.info(
-  `[foreman] model=${model} source=${configuredModel ? "EVE_MODEL" : "default (EVE_MODEL is unset)"}`,
-);
+const fallbackModel = "openai/gpt-5.6-luna";
 
 export default defineAgent({
-  model,
+  model: defineDynamic({
+    fallback: fallbackModel,
+    events: {
+      "session.started": () => {
+        const configuredModel = process.env.EVE_MODEL?.trim();
+        const model = configuredModel || fallbackModel;
+
+        console.info(
+          `[foreman] model=${model} source=${configuredModel ? "EVE_MODEL" : "default (EVE_MODEL is unset)"}`,
+        );
+
+        return model;
+      },
+    },
+  }),
 
   // Bound accidental or adversarial sessions. Eve pauses interactive sessions
   // at these limits and asks the caller whether to continue.
